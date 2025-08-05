@@ -41,4 +41,8 @@ public class WiseSayingController {
         service.update(wiseSaying, newContent, newAuthor);
     }
 
+    public void build() {
+        service.build();
+    }
+
 }

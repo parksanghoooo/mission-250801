@@ -78,6 +78,10 @@ public class App {
 
                 controller.update(wiseSaying, newContent, newAuthor);
             }
+            // 빌드
+            else if (cmd.equals(Command.BUILD)) {
+                controller.build();
+            }
 
         }
 

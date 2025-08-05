@@ -34,4 +34,8 @@ public class WiseSayingService {
         repository.update(wiseSaying, newContent, newAuthor);
     }
 
+    public void build() {
+        repository.build();
+    }
+
 }
