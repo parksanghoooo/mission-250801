@@ -1,9 +1,9 @@
 package com.ll.wisesaying.domain.wiseSaying.repository;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.ll.wisesaying.domain.wiseSaying.model.entity.WiseSaying;
 import com.ll.wisesaying.global.constant.ErrorMessage;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -87,31 +87,42 @@ public class WiseSayingRepository {
         }
     }
 
+    public void build() {
+        try {
+            Path dataJsonPath = getWiseSayingFilePath(0).getParent().resolve("data.json");
+
+            objectMapper.writeValue(dataJsonPath.toFile(), wiseSayings);
+        } catch (IOException e) {
+            throw new RuntimeException(ErrorMessage.FAIL_TO_SAVE_BUILD_FILE, e);
+        }
+    }
+
     private void saveLastId(long lastId) {
         try {
             Files.writeString(LAST_ID_FILE, String.valueOf(lastId));
         } catch (IOException e) {
-            throw new RuntimeException(ErrorMessage.FAIL_TO_WRITE_LAST_ID, e);
+            throw new RuntimeException(ErrorMessage.FAIL_TO_SAVE_LAST_ID_FILE, e);
         }
     }
 
     private void loadAll() {
-        Path dirPath = getWiseSayingFilePath(0).getParent();
+        Path path = getWiseSayingFilePath(0).getParent().resolve("data.json");
 
-        if (!Files.exists(dirPath)) System.err.printf(ErrorMessage.FAIL_TO_LOAD_DIRECTORY, dirPath.getFileName());;
+        if (!Files.exists(path)) {
+            return;
+        }
 
-        File dir = dirPath.toFile();
-        File[] files = dir.listFiles((d, name) -> name.endsWith(".json"));
+        try {
+            List<WiseSaying> list = objectMapper.readValue(
+                    path.toFile(),
+                    new TypeReference<List<WiseSaying>>() {}
+            );
 
-        if (files == null) return;
+            wiseSayings.clear();
+            wiseSayings.addAll(list);
 
-        for (File file : files) {
-            try {
-                WiseSaying ws = objectMapper.readValue(file, WiseSaying.class);
-                wiseSayings.add(ws);
-            } catch (IOException e) {
-                System.err.printf(ErrorMessage.FAIL_TO_LOAD_FILE, file.getName());
-            }
+        } catch (IOException e) {
+            throw new RuntimeException(ErrorMessage.FAIL_TO_LOAD_BUILD_FILE, e);
         }
     }
 
@@ -125,7 +136,7 @@ public class WiseSayingRepository {
             String content = Files.readString(LAST_ID_FILE).trim();
             lastId = Long.parseLong(content);
         } catch (IOException | NumberFormatException e) {
-            throw new RuntimeException(ErrorMessage.FAIL_TO_LOAD_LAST_ID, e);
+            throw new RuntimeException(ErrorMessage.FAIL_TO_LOAD_LAST_ID_FILE, e);
         }
     }
 
