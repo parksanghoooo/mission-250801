@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.ll.wisesaying.global.db.config.DBConfig.LAST_ID_FILE;
 import static com.ll.wisesaying.global.db.config.DBConfig.getWiseSayingFilePath;
@@ -42,7 +43,36 @@ public class WiseSayingRepository {
         return descWiseSayings;
     }
 
-    public void saveWiseSaying(WiseSaying wiseSaying) {
+    public Optional<WiseSaying> findById(long id) {
+        List<WiseSaying> allWiseSayings = new ArrayList<>(wiseSayings);
+
+        for (WiseSaying wiseSaying : allWiseSayings) {
+            if (wiseSaying.getId() == id)
+                return Optional.of(wiseSaying);
+        }
+
+        return Optional.empty();
+    }
+
+    public boolean deleteById(long id) {
+        Optional<WiseSaying> optional = findById(id);
+
+        if (optional.isEmpty()) {
+            return false;
+        }
+
+        wiseSayings.remove(optional.get());
+
+        try {
+            Files.deleteIfExists(getWiseSayingFilePath(id));
+        } catch (IOException e) {
+            System.err.printf(ErrorMessage.FAIL_TO_DELETE_FILE, id);
+        }
+
+        return true;
+    }
+
+    private void saveWiseSaying(WiseSaying wiseSaying) {
         try {
             Files.createDirectories(getWiseSayingFilePath(0).getParent());
             objectMapper.writeValue(getWiseSayingFilePath(wiseSaying.getId()).toFile(), wiseSaying);
@@ -51,7 +81,7 @@ public class WiseSayingRepository {
         }
     }
 
-    public void saveLastId(long lastId) {
+    private void saveLastId(long lastId) {
         try {
             Files.writeString(LAST_ID_FILE, String.valueOf(lastId));
         } catch (IOException e) {
@@ -59,7 +89,7 @@ public class WiseSayingRepository {
         }
     }
 
-    public void loadAll() {
+    private void loadAll() {
         Path dirPath = getWiseSayingFilePath(0).getParent();
 
         if (!Files.exists(dirPath)) System.err.printf(ErrorMessage.FAIL_TO_LOAD_DIRECTORY, dirPath.getFileName());;

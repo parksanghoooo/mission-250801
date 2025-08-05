@@ -5,6 +5,7 @@ import com.ll.wisesaying.domain.wiseSaying.service.WiseSayingService;
 import com.ll.wisesaying.global.constant.Message;
 
 import java.util.List;
+import java.util.Optional;
 
 public class WiseSayingController {
 
@@ -26,6 +27,14 @@ public class WiseSayingController {
         for (WiseSaying wiseSaying : allWiseSayings) {
             System.out.printf(Message.LIST_ROW_FORMAT, wiseSaying.getId(), wiseSaying.getAuthor(), wiseSaying.getContent());
         }
+    }
+
+    public Optional<WiseSaying> getWiseSaying(long id) {
+        return service.findById(id);
+    }
+
+    public boolean delete(long id) {
+        return service.deleteById(id);
     }
 
 }
