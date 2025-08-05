@@ -24,5 +24,8 @@ public class Message {
     public static final String BEFORE_CONTENT = "명언(기존) : %s\n";
     public static final String BEFORE_AUTHOR = "작가(기존) : %s\n";
 
+    // 빌드 관련
+    public static final String BUILD_SUCCESS = "data.json 파일의 내용이 갱신되었습니다.";
+
 }
 
