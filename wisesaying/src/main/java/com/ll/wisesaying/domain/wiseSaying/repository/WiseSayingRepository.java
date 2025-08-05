@@ -72,6 +72,12 @@ public class WiseSayingRepository {
         return true;
     }
 
+    public void update(WiseSaying wiseSaying, String newContent, String newAuthor) {
+        wiseSaying.setContent(newContent);
+        wiseSaying.setAuthor(newAuthor);
+        saveWiseSaying(wiseSaying); // 덮어쓰기
+    }
+
     private void saveWiseSaying(WiseSaying wiseSaying) {
         try {
             Files.createDirectories(getWiseSayingFilePath(0).getParent());

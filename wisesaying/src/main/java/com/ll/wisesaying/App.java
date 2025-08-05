@@ -56,6 +56,28 @@ public class App {
                 else
                     System.out.printf(ErrorMessage.NOT_EXIST_WISE_SAYING, id);
             }
+            // 수정
+            else if (cmd.startsWith(Command.UPDATE)) {
+                long id = extractId(cmd);
+
+                Optional<WiseSaying> optional = controller.getWiseSaying(id);
+                if (optional.isEmpty()) {
+                    System.out.printf(ErrorMessage.NOT_EXIST_WISE_SAYING, id);
+                    continue;
+                }
+
+                WiseSaying wiseSaying = optional.get();
+
+                System.out.printf(Message.BEFORE_CONTENT, wiseSaying.getContent());
+                System.out.print(Message.INPUT_CONTENT);
+                String newContent = br.readLine().trim();
+
+                System.out.printf(Message.BEFORE_AUTHOR, wiseSaying.getAuthor());
+                System.out.print(Message.INPUT_AUTHOR);
+                String newAuthor = br.readLine().trim();
+
+                controller.update(wiseSaying, newContent, newAuthor);
+            }
 
         }
 

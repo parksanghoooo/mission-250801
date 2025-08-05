@@ -37,4 +37,8 @@ public class WiseSayingController {
         return service.deleteById(id);
     }
 
+    public void update(WiseSaying wiseSaying, String newContent, String newAuthor) {
+        service.update(wiseSaying, newContent, newAuthor);
+    }
+
 }

@@ -30,4 +30,8 @@ public class WiseSayingService {
         return repository.deleteById(id);
     }
 
+    public void update(WiseSaying wiseSaying, String newContent, String newAuthor) {
+        repository.update(wiseSaying, newContent, newAuthor);
+    }
+
 }
