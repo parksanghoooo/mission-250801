@@ -12,6 +12,9 @@ public class WiseSaying {
         this.author = author;
     }
 
+    // object mapper는 클래스의 기본 생성자를 통해 빈 객체 생성 후 필드 매핑하므로 기본 생성자가 필요
+    public WiseSaying() {}
+
     public long getId() {
         return id;
     }
