@@ -6,6 +6,7 @@ import com.ll.wisesaying.global.constant.ErrorMessage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +21,8 @@ public class WiseSayingRepository {
 
     public WiseSayingRepository() {
         // 저장된 정보 가져오기
-        loadAll();
         loadLastId();
+        loadAll();
     }
 
     public WiseSaying create(String content, String author) {
@@ -36,8 +37,9 @@ public class WiseSayingRepository {
     }
 
     public List<WiseSaying> findAll() {
-        // 안전 복사
-        return new ArrayList<>(wiseSayings);
+        List<WiseSaying> descWiseSayings = new ArrayList<>(wiseSayings); // 데이터 복제 (안전 복사)
+        descWiseSayings.sort((a, b) -> Long.compare(b.getId(), a.getId()));
+        return descWiseSayings;
     }
 
     public void saveWiseSaying(WiseSaying wiseSaying) {
@@ -58,24 +60,22 @@ public class WiseSayingRepository {
     }
 
     public void loadAll() {
-        try {
-            Files.createDirectories(getWiseSayingFilePath(0).getParent());
+        Path dirPath = getWiseSayingFilePath(0).getParent();
 
-            File dir = getWiseSayingFilePath(0).getParent().toFile();
-            File[] files = dir.listFiles((d, name) -> name.endsWith(".json"));
+        if (!Files.exists(dirPath)) System.err.printf(ErrorMessage.FAIL_TO_LOAD_DIRECTORY, dirPath.getFileName());;
 
-            if (files == null) return;
+        File dir = dirPath.toFile();
+        File[] files = dir.listFiles((d, name) -> name.endsWith(".json"));
 
-            for (File file : files) {
-                try {
-                    WiseSaying ws = objectMapper.readValue(file, WiseSaying.class);
-                    wiseSayings.add(ws);
-                } catch (IOException e) {
-                    System.err.println(ErrorMessage.FAIL_TO_LOAD_FILE + file.getName());
-                }
+        if (files == null) return;
+
+        for (File file : files) {
+            try {
+                WiseSaying ws = objectMapper.readValue(file, WiseSaying.class);
+                wiseSayings.add(ws);
+            } catch (IOException e) {
+                System.err.printf(ErrorMessage.FAIL_TO_LOAD_FILE, file.getName());
             }
-        } catch (IOException e) {
-            throw new RuntimeException(ErrorMessage.FAIL_TO_LOAD_DIRECTORY, e);
         }
     }
 
