@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.ll.wisesaying.domain.wiseSaying.model.entity.WiseSaying;
 import com.ll.wisesaying.global.constant.ErrorMessage;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -106,21 +107,37 @@ public class WiseSayingRepository {
     }
 
     private void loadAll() {
-        Path path = getWiseSayingFilePath(0).getParent().resolve("data.json");
+        Path dir = getWiseSayingFilePath(0).getParent();
+        Path dataJsonPath = dir.resolve("data.json");
 
-        if (!Files.exists(path)) {
+        wiseSayings.clear();
+
+        File[] jsonFiles = dir.toFile().listFiles((d, name) -> name.matches("\\d+\\.json"));
+        if (jsonFiles == null || jsonFiles.length == 0) {
+            // 아무런 명언 파일도 없다면 빈 리스트로 유지 + data.json 덮어쓰기
+            try {
+                objectMapper.writeValue(dataJsonPath.toFile(), wiseSayings);
+            } catch (IOException e) {
+                throw new RuntimeException(ErrorMessage.FAIL_TO_LOAD_BUILD_FILE, e);
+            }
             return;
         }
 
+        List<WiseSaying> loadedList = new ArrayList<>();
+        for (File file : jsonFiles) {
+            try {
+                WiseSaying ws = objectMapper.readValue(file, WiseSaying.class);
+                loadedList.add(ws);
+            } catch (IOException e) {
+                throw new RuntimeException(ErrorMessage.FAIL_TO_LOAD_LAST_ID_FILE, e);
+            }
+        }
+
+        wiseSayings.addAll(loadedList);
+
+        // 항상 data.json 최신화
         try {
-            List<WiseSaying> list = objectMapper.readValue(
-                    path.toFile(),
-                    new TypeReference<List<WiseSaying>>() {}
-            );
-
-            wiseSayings.clear();
-            wiseSayings.addAll(list);
-
+            objectMapper.writeValue(dataJsonPath.toFile(), loadedList);
         } catch (IOException e) {
             throw new RuntimeException(ErrorMessage.FAIL_TO_LOAD_BUILD_FILE, e);
         }
